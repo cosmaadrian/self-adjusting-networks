@@ -1,0 +1,18 @@
+# Environment name
+genesis:
+    extra_args:
+        # Number of workers for data loading
+        num_workers: 4
+        wandb_entity: cosmadrian
+
+adrian-fep:
+    extra_args:
+        # Number of workers for data loading
+        num_workers: 4
+        wandb_entity: cosmadrian
+
+adrian-mac:
+    extra_args:
+        # Number of workers for data loading
+        num_workers: 0
+        wandb_entity: cosmadrian

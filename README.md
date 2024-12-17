@@ -1,2 +1,5 @@
-# self-adjusting-networks
-Testing out some stuff.
+# Self-Adjusting Networks
+
+Author: Adrian Cosma (cosma.i.adrian@gmail.com)
+
+Testing.

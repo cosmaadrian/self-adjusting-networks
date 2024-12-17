@@ -1,0 +1,78 @@
+env: adrian-fep
+
+seed: 666
+run_id: 1
+
+accumulation_steps: 1
+clip_grad_norm: 1
+max_grad_norm: 1.5
+
+resume_from: ""
+
+evaluators:
+  - name: generation
+    args:
+      solution: 42
+
+epochs: -1
+n_train_iters: 200000
+actually_stop_at: 25000
+
+batch_size: 64
+eval_every: 1 # epochs
+eval_batch_size: 128
+eval_every_batches: 1024
+
+trainer: lm_trainer
+
+boundary_lambda: 1.0
+vq_lambda: 1.0
+
+dataset: hf_dataset
+dataset_args:
+  dataset_name: open-web-math/open-web-math
+  subset: null
+  chunk_size: 512
+
+model_checkpoint:
+  save_model: 1
+  override_checkpoints: 1
+  monitor_quantity: "generation#loss_next_byte"
+  direction: down
+
+model: gpt
+model_args:
+  hf_model_name: google/byt5-small # used for the byte tokenizer
+  dmodel: 512
+  num_layers: 4
+  dropout: 0.0
+  freeze: 0
+  use_tied_embeddings: 1
+
+####################################################
+####################################################
+####################################################
+
+model_width_multiplier: 1.0
+
+
+####################################################
+####################################################
+####################################################
+
+optimizer_args:
+  beta1: 0.9
+  beta2: 0.9
+  eps: 1e-6
+  weight_decay: 1.
+
+scheduler_args:
+  max_lr: 0.0001
+  num_warmup_steps: 256
+  reset_scheduler: 0
+
+log_grads: 0
+log_every: 32 # batches
+
+use_compile: 0 # doesn't work without Triton (e.g. genesis)
+use_amp: 1

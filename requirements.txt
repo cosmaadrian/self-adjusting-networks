@@ -1,0 +1,4 @@
+inflection
+tqdm
+colorama
+torchinfo
