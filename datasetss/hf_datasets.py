@@ -37,11 +37,7 @@ class HuggingfaceDataset(AcumenDataset):
             self.dataset = self.dataset.select(range(num_batches_of_interest))
 
         self.dataset = self.dataset.shuffle()
-
         self.tokenizer = AutoTokenizer.from_pretrained(args.model_args.hf_model_name, token = os.environ.get('HF_TOKEN', None))
-
-        AcumenAccelerator().master_print(f"[HuggingfaceDataset] Using reference tokenizer: {self.reference_tokenizer.name_or_path}")
-        AcumenAccelerator().master_print(f"[HuggingfaceDataset] Using gold tokenizer: {self.gold_tokenizer.name_or_path}")
 
     def __len__(self):
         return len(self.dataset)
@@ -107,7 +103,7 @@ class HuggingfaceDataset(AcumenDataset):
             pin_memory = True,
             sampler = sampler,
             shuffle = (sampler is None),
-            collate_fn = cls.collate_fn(args, dataset.tokenizer, reference_tokenizer = dataset.reference_tokenizer, gold_tokenizer = dataset.gold_tokenizer),
+            collate_fn = cls.collate_fn(args, dataset.tokenizer),
             prefetch_factor = 2,
         )
 
@@ -124,6 +120,6 @@ class HuggingfaceDataset(AcumenDataset):
             pin_memory = True,
             shuffle = False,
             sampler = sampler,
-            collate_fn = cls.collate_fn(args, dataset.tokenizer, reference_tokenizer = dataset.reference_tokenizer, gold_tokenizer = dataset.gold_tokenizer),
+            collate_fn = cls.collate_fn(args, dataset.tokenizer),
             prefetch_factor = 2,
         )

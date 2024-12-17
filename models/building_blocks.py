@@ -52,6 +52,7 @@ class Attention(nn.Module):
             qk_norm = False,
             attn_drop = 0.,
             proj_drop = 0.,
+            is_causal = True,
         ):
 
         super().__init__()
@@ -121,6 +122,10 @@ class Attention(nn.Module):
 
             sim = sim + mask # mask is float
             sim = sim.reshape((sim.shape[0] * h, sim.shape[2], sim.shape[3])) # b h n n -> (b h) n n
+        else:
+            # causal mask
+            causal_mask = torch.ones((x.shape[1], x.shape[1]), device=x.device).triu(1).bool()
+            sim = sim.masked_fill(causal_mask[None, :, :], -torch.finfo(sim.dtype).max)
 
         attn = sim.softmax(dim = -1)
         attn = torch.nan_to_num(attn)
@@ -195,6 +200,7 @@ class TransformerEncoder(nn.Module):
                     nheads = nheads,
                     qkv_bias = False,
                     qk_norm = True,
+                    is_causal = True
                 ),
                 MLP(
                     args,

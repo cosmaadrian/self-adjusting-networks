@@ -73,8 +73,8 @@ train_dataloader = nomenclature.DATASETS[args.dataset].train_dataloader(args)
 model = nomenclature.TRAINERS[args.trainer](args, architecture)
 
 evaluators = [
-    nomenclature.EVALUATORS[evaluator_args.name](args, architecture, evaluator_args.args)
-    for evaluator_args in args.evaluators
+    # nomenclature.EVALUATORS[evaluator_args.name](args, architecture, evaluator_args.args)
+    # for evaluator_args in args.evaluators
 ]
 
 # checkpoint_callback_iter = callbacks.IterationCheckpoint(
@@ -147,7 +147,7 @@ try:
         model,
         optimizer,
         train_dataloader,
-        evaluators = evaluators
+        evaluators = evaluators,
     )
 except KeyboardInterrupt:
     accelerator.master_print("::: 🛑🛑🛑 Training Interrupted 🛑🛑🛑 :::")

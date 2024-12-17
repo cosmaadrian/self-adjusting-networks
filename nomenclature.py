@@ -1,5 +1,6 @@
 import models
 MODELS = {
+    'llm': models.LLM
 }
 
 import datasetss
@@ -9,8 +10,8 @@ DATASETS = {
 
 import trainers
 TRAINERS = {
+    'lm_trainer': trainers.LMTrainer
 }
-
 
 import evaluators
 EVALUATORS = {
