@@ -140,38 +140,59 @@ class Attention(nn.Module):
         out = self.proj_drop(out)
         return out
 
+class FullRankLinear(nn.Module):
+    def __init__(self, args, in_features, out_features, bias = True):
+        super().__init__()
+        self.args = args
+        self.in_features = in_features
+        self.out_features = out_features
+
+        # nothing special
+        self.fc = nn.Linear(in_features, out_features, bias = bias)
+
+    def forward(self, x):
+        x = self.fc(x)
+        return x
+
+class LowRankLinear(nn.Module):
+    def __init__(self, args, in_features, out_features, bias = True):
+        super().__init__()
+        self.args = args
+        self.in_features = in_features
+        self.out_features = out_features
+
+        # low-rank
+        self.fc1 = nn.Linear(in_features, self.args.model_args.rank, bias = bias)
+        self.fc2 = nn.Linear(self.args.model_args.rank, out_features, bias = bias)
+
+    def forward(self, x):
+        x = self.fc1(x)
+        x = self.fc2(x)
+        return x
+
+
 class MLP(nn.Module):
-    def __init__(self, args, in_features, hidden_features = None, out_features = None, bias = True, drop = 0.):
+    def __init__(self, args, in_features, hidden_features = None, out_features = None, bias = False, drop = 0.):
         super().__init__()
         self.args = args
         self.drop = drop
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
 
-        self.w1 = nn.Linear(in_features, hidden_features, bias=bias)
-        self.w3 = nn.Linear(hidden_features, out_features, bias=bias)
+        if self.args.model_args.mlp_type == 'same_rank':
+            self.fc1 = FullRankLinear(args, in_features, hidden_features, bias = bias)
+            self.fc2 = FullRankLinear(args, hidden_features, out_features, bias = bias)
+        else:
+            # TODO add low-rank / self-adjusting
+            pass
+
         self.dropout = nn.Dropout(drop)
 
-        self.init_method = init_method_normal((1 / in_features) ** 0.5)
-        self.init_method_w3 = init_method_normal((1 / hidden_features) ** 0.5)
-        self.reset_parameters()
-
-    def reset_parameters(self):
-        self.init_method(self.w1.weight)
-        self.init_method_w3(self.w3.weight)
-
-        if self.w1.bias is not None:
-            constant_(self.w1.bias, 0.)
-
-        if self.w3.bias is not None:
-            constant_(self.w3.bias, 0.)
-
     def forward(self, x, **kwargs):
-        x =  F.gelu(self.w1(x))
+        x =  F.gelu(self.fc1(x))
         x = self.dropout(x)
-        w3 = self.w3(x)
-        return w3
-
+        x = self.fc2(x)
+        return x
 
 class TransformerEncoder(nn.Module):
     def __init__(self,
@@ -208,7 +229,7 @@ class TransformerEncoder(nn.Module):
                     hidden_features = 4 * dmodel,
                     out_features = dmodel,
                     drop = dropout,
-                    bias = True
+                    bias = False
                 )
             ]))
 

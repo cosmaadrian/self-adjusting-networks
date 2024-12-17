@@ -26,8 +26,6 @@ class LMTrainer(AcumenTrainer):
             {'params': decay_params, 'weight_decay': self.args.optimizer_args.weight_decay},
             {'params': nodecay_params, 'weight_decay': 0.0}
         ]
-
-        print("::::::::::: Using MuAdam :::::::::::")
         self._optimizer = AdamW(
             params = optim_groups,
             lr = lr,
@@ -47,6 +45,10 @@ class LMTrainer(AcumenTrainer):
 
         next_token_loss = self.next_token_prediction_loss(output.view(-1, output.size(-1)), input_ids.view(-1))
         final_loss = next_token_loss
+
+        # self.log_dict(output['entropies'], on_step = False)
+        for key, value in model_output['entropies'].items():
+            self.log(f'entropy/{key}', value, on_step = False)
 
         self.log('train/loss:next_byte', next_token_loss.item(), on_step = True)
         self.iter_idx += 1

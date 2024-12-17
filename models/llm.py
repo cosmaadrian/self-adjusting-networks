@@ -49,6 +49,19 @@ class LLM(nn.Module):
             x = embedded_chars,
         )
 
+        with torch.no_grad():
+            entropies = {}
+            # get all mlp layers of transformer
+            for i, layer in enumerate(self.transformer.layers):
+                mlp_weight = layer[1].fc1.fc.weight
+                S = torch.linalg.svdvals(mlp_weight)
+
+                # normalize S
+                normalized_S = S / S.sum()
+                spectral_entropy = -torch.sum(normalized_S * torch.log(normalized_S + 1e-6))
+                entropies[f'entropy/mlp_layer_{i}'] = spectral_entropy.item()
+
         return {
             'output': x,
+            'entropies': entropies,
         }
